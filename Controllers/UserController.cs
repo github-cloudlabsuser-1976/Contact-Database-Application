@@ -1,4 +1,5 @@
 using CRUD_application_2.Models;
+using CRUD_application_2.Services;
 using System.Linq;
 using System.Web.Mvc;
  
@@ -6,25 +7,32 @@ namespace CRUD_application_2.Controllers
 {
     public class UserController : Controller
     {
-        public static System.Collections.Generic.List<User> userlist = new System.Collections.Generic.List<User>();
+        private readonly IUserControllerService _userService;
+
+        public UserController()
+        {
+            _userService = new UserControllerService();
+        }
+
         // GET: User
         public ActionResult Index()
         {
-            return View(userlist);
+            var userList = _userService.GetAllUsers();
+            return View(userList);
         }
- 
-      // GET: User/Details/5
+
+        // GET: User/Details/5
         public ActionResult Details(int id)
         {
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            var user = _userService.GetUserById(id);
             if (user == null)
             {
                 return HttpNotFound();
             }
             return View(user);
         }
- 
-      // GET: User/Create
+
+        // GET: User/Create
         [HttpGet]
         public ActionResult Create()
         {
@@ -37,30 +45,28 @@ namespace CRUD_application_2.Controllers
         {
             if (ModelState.IsValid)
             {
-                userlist.Add(user);
+                _userService.AddUser(user);
                 return RedirectToAction("Index");
             }
             return View(user);
         }
- 
+
         // GET: User/Edit/5
         public ActionResult Edit(int id)
         {
-            // This method is responsible for displaying the view to edit an existing user with the specified ID.
-            // It retrieves the user from the userlist based on the provided ID and passes it to the Edit view.
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            var user = _userService.GetUserById(id);
             if (user == null)
             {
                 return HttpNotFound();
             }
             return View(user);
         }
- 
-      // GET: User/Edit/5
+
+        // POST: User/Edit/5
         [HttpPost]
         public ActionResult Edit(int id, User updatedUser)
         {
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            var user = _userService.GetUserById(id);
             if (user == null)
             {
                 return HttpNotFound();
@@ -68,10 +74,7 @@ namespace CRUD_application_2.Controllers
 
             if (ModelState.IsValid)
             {
-                // Update the user's information with the updatedUser object
-                user.Name = updatedUser.Name;
-                user.Email = updatedUser.Email;
-
+                _userService.UpdateUser(user, updatedUser);
                 return RedirectToAction("Index");
             }
 
@@ -81,7 +84,7 @@ namespace CRUD_application_2.Controllers
         // GET: User/Delete/5
         public ActionResult Delete(int id)
         {
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            var user = _userService.GetUserById(id);
             if (user == null)
             {
                 return HttpNotFound();
@@ -93,13 +96,13 @@ namespace CRUD_application_2.Controllers
         [HttpPost]
         public ActionResult Delete(int id, FormCollection collection)
         {
-            var user = userlist.FirstOrDefault(u => u.Id == id);
+            var user = _userService.GetUserById(id);
             if (user == null)
             {
                 return HttpNotFound();
             }
 
-            userlist.Remove(user);
+            _userService.DeleteUser(user);
 
             return RedirectToAction("Index");
         }
